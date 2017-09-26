@@ -266,6 +266,19 @@ dt_probe_discover(dt_provider_t *pvp, const dtrace_probedesc_t *pdp)
 	xc = i;
 	nc++;
 
+#if defined(__APPLE__)
+	/*
+	 * Try userspace data if the kernel could not provide argument types
+	 * for fbt probes
+	 */
+	if (xc == 0 && nc == 0 &&
+		strcmp(pvp->pv_desc.dtvd_name, "fbt") == 0) {
+		nc = adc;
+		dt_module_get_types(dtp, pdp, adv, &nc);
+		xc = nc;
+	}
+#endif /* !defined(__APPLE__) */
+
 	/*
 	 * Now that we have discovered the number of native and translated
 	 * arguments from the argument descriptions, allocate a new probe ident
@@ -378,7 +391,7 @@ dt_probe_lookup(dt_provider_t *pvp, const char *s)
 		return (dt_probe_discover(pvp, &pd));
 
 	if (errno == ESRCH || errno == EBADF)
-		(void) dt_set_errno(dtp, EDT_NOPROBE);
+		(void) dt_set_errno(dtp, dt_probe_noprobe_errno(dtp, &pd));
 	else
 		(void) dt_set_errno(dtp, errno);
 
@@ -869,7 +882,7 @@ dtrace_probe_iter(dtrace_hdl_t *dtp,
 	switch (errno) {
 	case ESRCH:
 	case EBADF:
-		return (pit.pit_matches ? 0 : dt_set_errno(dtp, EDT_NOPROBE));
+		return (pit.pit_matches ? 0 : dt_set_errno(dtp, dt_probe_noprobe_errno(dtp, pdp)));
 	case EINVAL:
 		return (dt_set_errno(dtp, EDT_BADPGLOB));
 	default:

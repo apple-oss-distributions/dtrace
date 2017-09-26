@@ -21,7 +21,7 @@
 
 /*
  * Portions copyright (c) 2011, Joyent, Inc. All rights reserved.
- * Portions copyright (c) 2011, Delphix. All rights reserved.
+ * Portions copyright (c) 2011, 2016 Delphix. All rights reserved.
  */
 
 /*
@@ -1861,7 +1861,7 @@ dt_setcontext(dtrace_hdl_t *dtp, dtrace_probedesc_t *pdp)
 	if (isdigit(pdp->dtpd_provider[strlen(pdp->dtpd_provider) - 1]) &&
 	    ((pvp = dt_provider_lookup(dtp, pdp->dtpd_provider)) == NULL ||
 	    pvp->pv_desc.dtvd_priv.dtpp_flags & DTRACE_PRIV_PROC) &&
-	    dt_pid_create_probes(pdp, dtp, yypcb) != 0) {
+	    dt_pid_create_probes(pdp, dtp, yypcb, DT_PR_CREATE) != 0) {
 		longjmp(yypcb->pcb_jmpbuf, EDT_COMPILER);
 	}
 
@@ -1881,13 +1881,22 @@ dt_setcontext(dtrace_hdl_t *dtp, dtrace_probedesc_t *pdp)
 		err = 0;
 	}
 
-	if (err == EDT_NOPROBE && !(yypcb->pcb_cflags & DTRACE_C_ZDEFS)) {
-		xyerror(D_PDESC_ZERO, "probe description %s:%s:%s:%s does not "
-		    "match any probes\n", pdp->dtpd_provider, pdp->dtpd_mod,
-		    pdp->dtpd_func, pdp->dtpd_name);
-	}
+	if (!(yypcb->pcb_cflags & DTRACE_C_ZDEFS)) {
+		if (err == EDT_NOPROBE) {
+			xyerror(D_PDESC_ZERO, "probe description %s:%s:%s:%s does not "
+			    "match any probes\n", pdp->dtpd_provider, pdp->dtpd_mod,
+			    pdp->dtpd_func, pdp->dtpd_name);
+		}
+		else if (err == EDT_PROBE_RESTRICTED) {
+			xyerror(D_PDESC_ZERO, "probe description %s:%s:%s:%s does not "
+			    "match any probes. %s\n", pdp->dtpd_provider, pdp->dtpd_mod,
+			    pdp->dtpd_func, pdp->dtpd_name, dtrace_errmsg(dtp, err));
 
-	if (err != EDT_NOPROBE && err != EDT_UNSTABLE && err != 0)
+		}
+	}
+	
+
+	if (err != EDT_NOPROBE && err != EDT_PROBE_RESTRICTED && err != EDT_UNSTABLE && err != 0)
 		xyerror(D_PDESC_INVAL, "%s\n", dtrace_errmsg(dtp, err));
 
 	dt_dprintf("set context to %s:%s:%s:%s [%u] prp=%p attr=%s argc=%d\n",
@@ -2344,22 +2353,21 @@ dt_lib_depend_free(dtrace_hdl_t *dtp)
 
 /*
  * Open all of the .d library files found in the specified directory and
- * compile each one in topological order to cache its inlines and translators,
- * etc.  We silently ignore any missing directories and other files found
- * therein. We only fail (and thereby fail dt_load_libs()) if we fail to
- * compile a library and the error is something other than #pragma D depends_on.
- * Dependency errors are silently ignored to permit a library directory to
- * contain libraries which may not be accessible depending on our privileges.
+ * compile each one of them. We silently ignore any missing directories and
+ * other files found therein. We only fail (and thereby fail dt_load_libs) if
+ * we fail to compile a library and the error is something other than #pragma D
+ * depends_on. Dependency errors are silently ignored to permit a library
+ * directory to contain which may not be accessible depending on our
+ * privileges.
  */
 static int
 dt_load_libs_dir(dtrace_hdl_t *dtp, const char *path)
 {
 	struct dirent *dp;
-	const char *p;
+	const char *p, *end;
 	DIR *dirp;
 
 	char fname[PATH_MAX];
-	dtrace_prog_t *pgp;
 	FILE *fp;
 	void *rv;
 	dt_lib_depend_t *dld;
@@ -2383,9 +2391,29 @@ dt_load_libs_dir(dtrace_hdl_t *dtp, const char *path)
 			continue;
 		}
 
+		/*
+		 * Skip files whose name match on already processed library
+		 */
+		for (dld = dt_list_next(&dtp->dt_lib_dep); dld != NULL;
+		    dld = dt_list_next(dld)) {
+			end = strrchr(dld->dtld_library, '/');
+			/* dt_lib_depend_add ensures this */
+			assert(end != NULL);
+			if (strcmp(end + 1, dp->d_name) == 0)
+				break;
+		}
+
+		if (dld != NULL) {
+			dt_dprintf("skipping library %s, already processed "
+			    "library with the same name: %s", dp->d_name,
+			    dld->dtld_library);
+			(void) fclose(fp);
+			continue;
+		}
+
 		dtp->dt_filetag = fname;
 		if (dt_lib_depend_add(dtp, &dtp->dt_lib_dep, fname) != 0)
-			goto err;
+			return (-1); /* preserve dt_errno */
 
 		rv = dt_compile(dtp, DT_CTX_DPROG,
 		    DTRACE_PROBESPEC_NAME, NULL,
@@ -2394,7 +2422,7 @@ dt_load_libs_dir(dtrace_hdl_t *dtp, const char *path)
 		if (rv != NULL && dtp->dt_errno &&
 		    (dtp->dt_errno != EDT_COMPILER ||
 		    dtp->dt_errtag != dt_errtag(D_PRAGMA_DEPEND)))
-			goto err;
+			return (-1); /* preserve dt_errno */
 
 		if (dtp->dt_errno)
 			dt_dprintf("error parsing library %s: %s\n",
@@ -2404,7 +2432,27 @@ dt_load_libs_dir(dtrace_hdl_t *dtp, const char *path)
 		dtp->dt_filetag = NULL;
 	}
 
-			(void) closedir(dirp);
+	(void) closedir(dirp);
+
+	return (0);
+}
+
+/*
+ * Perform a topological sorting of all the libraries found across the entire
+ * dt_lib_path.  Once sorted, compile each one in topological order to cache its
+ * inlines and translators, etc.  We silently ignore any missing directories and
+ * other files found therein. We only fail (and thereby fail dt_load_libs()) if
+ * we fail to compile a library and the error is something other than #pragma D
+ * depends_on.  Dependency errors are silently ignored to permit a library
+ * directory to contain libraries which may not be accessible depending on our
+ * privileges.
+ */
+static int
+dt_load_libs_sort(dtrace_hdl_t *dtp)
+{
+	dtrace_prog_t *pgp;
+	FILE *fp;
+	dt_lib_depend_t *dld;
 	/*
 	 * Finish building the graph containing the library dependencies
 	 * and perform a topological sort to generate an ordered list
@@ -2464,14 +2512,29 @@ dt_load_libs(dtrace_hdl_t *dtp)
 		return (0); /* libraries already processed */
 
 	dtp->dt_cflags |= DTRACE_C_NOLIBS;
-
-	for (dirp = dt_list_next(&dtp->dt_lib_path);
+	/*
+	 * /usr/lib/dtrace is always at the head of the list. The rest of the
+	 * list is specified in the precedence order the user requested. Process
+	 * everything other than the head first. DTRACE_C_NOLIBS has already
+	 * been spcified so dt_vopen will ensure that there is always one entry
+	 * in dt_lib_path.
+	 */
+	for (dirp = dt_list_next(dt_list_next(&dtp->dt_lib_path));
 	    dirp != NULL; dirp = dt_list_next(dirp)) {
 		if (dt_load_libs_dir(dtp, dirp->dir_path) != 0) {
 			dtp->dt_cflags &= ~DTRACE_C_NOLIBS;
 			return (-1); /* errno is set for us */
 		}
 	}
+	/* Handle /usr/lib/dtrace */
+	dirp = dt_list_next(&dtp->dt_lib_path);
+	if (dt_load_libs_dir(dtp, dirp->dir_path) != 0) {
+		dtp->dt_cflags &= ~DTRACE_C_NOLIBS;
+		return (-1); /* errno is set for us */
+	}
+
+	if (dt_load_libs_sort(dtp) < 0)
+		return (-1);
 
 	return (0);
 }
@@ -2567,6 +2630,28 @@ dt_compile(dtrace_hdl_t *dtp, int context, dtrace_probespec_t pspec, void *arg,
 	}
 
 	/*
+	 * Perform sugar transformations (for "if" / "else") and replace the
+	 * existing clause chain with the new one.
+	 */
+	if (context == DT_CTX_DPROG) {
+		dt_node_t *dnp, *next_dnp;
+		dt_node_t *new_list = NULL;
+
+		for (dnp = yypcb->pcb_root->dn_list;
+			 dnp != NULL; dnp = next_dnp) {
+			/* remove this node from the list */
+			next_dnp = dnp->dn_list;
+			dnp->dn_list = NULL;
+
+			if (dnp->dn_kind == DT_NODE_CLAUSE)
+				dnp = dt_compile_sugar(dtp, dnp);
+			/* append node to the new list */
+			new_list = dt_node_link(new_list, dnp);
+		}
+		yypcb->pcb_root->dn_list = new_list;
+	}
+
+	/*
 	 * If we have successfully created a parse tree for a D program, loop
 	 * over the clauses and actions and instantiate the corresponding
 	 * libdtrace program.  If we are parsing a D expression, then we
@@ -2586,7 +2671,9 @@ dt_compile(dtrace_hdl_t *dtp, int context, dtrace_probespec_t pspec, void *arg,
 		for (; dnp != NULL; dnp = dnp->dn_list) {
 			switch (dnp->dn_kind) {
 			case DT_NODE_CLAUSE:
-				dt_compile_clause(dtp, dnp);
+					if (DT_TREEDUMP_PASS(dtp, 4))
+						dt_printd(dnp, stderr, 0);
+					dt_compile_clause(dtp, dnp);
 				break;
 			case DT_NODE_XLATOR:
 				if (dtp->dt_xlatemode == DT_XL_DYNAMIC)
