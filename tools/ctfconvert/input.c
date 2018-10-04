@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"@(#)input.c	1.9	06/05/03 SMI"
-
 /*
  * Routines for retrieving CTF data from a .SUNW_ctf ELF section
  */
@@ -107,7 +105,9 @@ read_file(Elf *elf, char *file, char *label, read_cb_f *func, void *arg,
 
 	/* Reconstruction of type tree */
 	if ((si = symit_new(elf, file)) == NULL) {
+#if !defined(__APPLE__)
 		warning("%s has no symbol table - skipping", file);
+#endif
 		return (0);
 	}
 
@@ -415,7 +415,6 @@ gelf_getsym_macho(Elf_Data * data, int ndx, GElf_Sym * sym, const char *base)
 {
 	const struct nlist *nsym = (const struct nlist *)(data->d_buf);
 	const char *name;
-	char *tmp;
 	
 	nsym += ndx;
 	name = base + nsym->n_un.n_strx;
@@ -463,7 +462,6 @@ gelf_getsym_macho_64(Elf_Data * data, int ndx, GElf_Sym * sym, const char *base)
 {
 	const struct nlist_64 *nsym = (const struct nlist_64 *)(data->d_buf);
 	const char *name;
-	char *tmp;
 	
 	nsym += ndx;
 	name = base + nsym->n_un.n_strx;
