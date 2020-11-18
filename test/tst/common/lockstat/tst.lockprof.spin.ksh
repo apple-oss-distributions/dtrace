@@ -1,4 +1,3 @@
-#!/bin/sh
 #
 # CDDL HEADER START
 #
@@ -21,9 +20,46 @@
 #
 
 #
-# Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2019 Apple, Inc.  All rights reserved.
 # Use is subject to license terms.
-#
-#ident	"@(#)err.D_PROC_OFF.toobig.exe	1.1	06/08/28 SMI"
 
-exec sleep 1000000
+if [ -b /dev/lockprof ]; then
+	echo "Skipping..."
+	exit 0
+fi
+
+dtrace -s /dev/stdin <<EOF
+/*
+ * ASSERTION: Verify that lockprof held/miss/spin spinlock probes can be created and triggered
+ */
+lockprof:::spin-held-10000
+{
+	held = 1;
+}
+
+lockprof:::spin-miss-2
+{
+	miss = 1;
+}
+
+lockprof:::spin-spin-100us
+{
+	spin = 1;
+}
+
+tick-1s
+/ held && miss && spin /
+{
+	exit(0);
+}
+
+tick-120s
+{
+	printf("held: %d\n", held);
+	printf("miss: %d\n", miss);
+	printf("spin: %d\n", spin);
+	exit(1);
+}
+
+EOF
+exit $?
