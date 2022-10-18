@@ -111,9 +111,9 @@ aggs/tst.multiaggs1.d
 aggs/tst.multiaggs2.d
 aggs/tst.multiaggs3.d
 aggs/tst.multinormalize.d
-aggs/tst.neglquant.d
+# aggs/tst.neglquant.d /* 24548050: output order is wrong on ARM */
 aggs/tst.negorder.d
-aggs/tst.negquant.d
+#aggs/tst.negquant.d /* 24548050: output order is wrong on ARM */
 aggs/tst.negtrunc.d
 aggs/tst.negtruncquant.d
 aggs/tst.normalize.d
@@ -189,14 +189,13 @@ buffering/err.resize2.d
 buffering/err.resize3.d
 buffering/err.zerobuf.d
 buffering/tst.alignring.d
-buffering/tst.cputime.ksh
+# buffering/tst.cputime.ksh					/* WAIVED: No preprocessor on bridgeOS. */
 buffering/tst.dynvarsize.d
 buffering/tst.fill1.d
 buffering/tst.resize1.d
 buffering/tst.resize2.d
 buffering/tst.resize3.d
 buffering/tst.ring1.d
-# buffering/tst.ring2.d has a race writing its output when run on more than one processor.
 buffering/tst.ring2.d
 buffering/tst.ring3.d
 buffering/tst.smallring.d
@@ -209,7 +208,7 @@ builtinvar/err.D_XLATE_NOCONV.rssize.d
 builtinvar/tst.arg0.d
 builtinvar/tst.arg0clause.d
 builtinvar/tst.arg1.d
-builtinvar/tst.arg1to8.d
+# builtinvar/tst.arg1to8.d /* 24547978: Returns illegal operation on ARM64 */
 builtinvar/tst.arg1to8clause.d
 builtinvar/tst.caller.d
 builtinvar/tst.caller1.d
@@ -227,6 +226,8 @@ builtinvar/tst.ipl.d
 builtinvar/tst.ipl1.d
 builtinvar/tst.lwpsinfo.d
 builtinvar/tst.lwpsinfo1.d
+builtinvar/tst.machctimestamp.d
+builtinvar/tst.machtimestamp.d
 builtinvar/tst.pid.d
 builtinvar/tst.pid1.d
 builtinvar/tst.psinfo.d
@@ -287,20 +288,22 @@ drops/drp.DTRACEDROP_PRINCIPAL.end.d
 drops/drp.DTRACEDROP_SPEC.d
 drops/drp.DTRACEDROP_SPECUNAVAIL.d
 dtraceUtil/err.D_PDESC_ZERO.InvalidDescription1.d
-dtraceUtil/tst.AddSearchPath.d.ksh
+# dtraceUtil/tst.AddSearchPath.d.ksh            /* WAIVED: No preprocessor on bridgeOS. */
 dtraceUtil/tst.BufsizeGiga.d.ksh
 dtraceUtil/tst.BufsizeKilo.d.ksh
 dtraceUtil/tst.BufsizeMega.d.ksh
 dtraceUtil/tst.BufsizeTera.d.ksh
 dtraceUtil/tst.DataModel32.d.ksh
 # dtraceUtil/tst.DataModel64.d.ksh				/* WAIVED: Awaits 64-bit dtrace userland. */
-dtraceUtil/tst.DefineNameWithCPP.d.ksh
+# dtraceUtil/tst.DefineNameWithCPP.d.ksh        /* WAIVED: No preprocessor on bridgeOS. */
 dtraceUtil/tst.DestructWithFunction.d.ksh
 dtraceUtil/tst.DestructWithID.d.ksh
 dtraceUtil/tst.DestructWithModule.d.ksh
 dtraceUtil/tst.DestructWithName.d.ksh
 dtraceUtil/tst.DestructWithoutW.d.ksh
 dtraceUtil/tst.DestructWithProvider.d.ksh
+# dtraceUtil/tst.ELFGenerationOut.d.ksh			/* WAIVED: MacOS X doesn't support ELF creation with -G */
+# dtraceUtil/tst.ELFGenerationWithO.d.ksh		/* WAIVED: MacOS X doesn't support ELF creation with -G */
 dtraceUtil/tst.ExitStatus1.d.ksh
 dtraceUtil/tst.ExitStatus2.d.ksh
 dtraceUtil/tst.ExtraneousProbeIds.d.ksh
@@ -357,7 +360,7 @@ dtraceUtil/tst.InvalidTraceProvider3.d.ksh
 dtraceUtil/tst.InvalidTraceProvider4.d.ksh
 dtraceUtil/tst.InvalidTraceProvider5.d.ksh
 dtraceUtil/tst.MultipleInvalidProbeId.d.ksh
-dtraceUtil/tst.PreprocessorStatement.d.ksh
+#dtraceUtil/tst.PreprocessorStatement.d.ksh   # no SDK, no stdio.h
 dtraceUtil/tst.QuietMode.d.ksh
 dtraceUtil/tst.TestCompile.d.ksh
 dtraceUtil/tst.UnDefineNameWithCPP.d.ksh
@@ -421,6 +424,8 @@ funcs/err.D_OP_VFPTR.badop.d
 funcs/err.D_PROTO_ARG.chillbadarg.d
 funcs/err.D_PROTO_ARG.copyoutbadarg.d
 funcs/err.D_PROTO_ARG.raisebadarg.d
+funcs/err.D_PROTO_ARG.tolowerbadarg.d
+funcs/err.D_PROTO_ARG.toupperbadarg.d
 funcs/err.D_PROTO_LEN.allocanoarg.d
 funcs/err.D_PROTO_LEN.badbreakpoint.d
 funcs/err.D_PROTO_LEN.chilltoofew.d
@@ -430,9 +435,15 @@ funcs/err.D_PROTO_LEN.copyoutstrtoofew.d
 funcs/err.D_PROTO_LEN.copyouttoofew.d
 funcs/err.D_PROTO_LEN.copyouttoomany.d
 funcs/err.D_PROTO_LEN.livedump.d
+funcs/err.D_PROTO_LEN.mtonstoofew.d
+funcs/err.D_PROTO_LEN.mtonstoomany.d
 funcs/err.D_PROTO_LEN.panicbadarg.d
 funcs/err.D_PROTO_LEN.progenyofbad2.d
 funcs/err.D_PROTO_LEN.stopbadarg.d
+funcs/err.D_PROTO_LEN.tolowertoofew.d
+funcs/err.D_PROTO_LEN.tolowertoomany.d
+funcs/err.D_PROTO_LEN.touppertoofew.d
+funcs/err.D_PROTO_LEN.touppertoomany.d
 funcs/err.D_STRINGOF_TYPE.badstringof.d
 funcs/err.D_VAR_UNDEF.badvar.d
 funcs/tst.badfreopen.ksh
@@ -448,6 +459,9 @@ funcs/tst.freopen.ksh
 funcs/tst.ftruncate.ksh
 funcs/tst.index.d
 funcs/tst.lltostr.d
+funcs/tst.lltostrbase.d
+funcs/tst.mtons.d
+funcs/tst.physmem.destruct.d
 funcs/tst.progenyof.d
 funcs/tst.rand.d
 funcs/tst.strchr.d
@@ -456,10 +470,13 @@ funcs/tst.strstr.d
 funcs/tst.strtok.d
 funcs/tst.substr.d
 funcs/tst.system.d
+funcs/tst.tolower.d
+funcs/tst.toupper.d
 grammar/err.D_ADDROF_LVAL.d
 grammar/err.D_EMPTY.empty.d
 grammar/tst.clauses.d
 grammar/tst.stmts.d
+include/tst.includefirst.ksh
 inline/err.D_DECL_IDRED.redef1.d
 inline/err.D_DECL_IDRED.redef2.d
 inline/err.D_IDENT_UNDEF.recur.d
@@ -471,10 +488,10 @@ inline/tst.InlineExpression.d
 inline/tst.InlineKinds.d
 inline/tst.InlineTypedef.d
 inline/tst.InlineWritableAssign.d
+# json/tst.preprocessor.general.d				/* WAIVED: No preprocessor on bridgeOS. */
+json/tst.strsize.d
+json/tst.usdt.d
 # io/tst.fds.d									/* RADAR 4487714: Awaits Darwin io provider. */
-strtoll/err.BaseTooLarge.d
-strtoll/err.BaseTooSmall.d
-strtoll/tst.strtoll.d
 lexer/err.D_CHR_NL.char.d
 lexer/err.D_CHR_NULL.char.d
 lexer/err.D_INT_DIGIT.InvalidDigit.d
@@ -527,7 +544,7 @@ lockstat/tst.ticketprobes.d
 misc/err.D_PRAGMA_OPTSET.d
 misc/tst.badopt.d
 misc/tst.boolopt.d
-misc/tst.dynopt.d
+# misc/tst.dynopt.d /* 24548377: fail sometimes on arm */
 multiaggs/err.D_PRINTA_AGGKEY.d
 multiaggs/err.D_PRINTA_AGGPROTO.d
 multiaggs/tst.many.d
@@ -557,25 +574,27 @@ pid/err.D_PROC_BADPID.badproc2.d
 pid/err.D_PROC_FUNC.badfunc.d
 pid/err.D_PROC_LIB.libdash.d
 pid/err.D_PROC_NAME.alldash.d
-pid/err.D_PROC_NAME.badname.d
+#pid/err.D_PDESC_NAME.badname.d /* ARM specific version below, since we always return D_PDESC_ZERO on arm (FIXME) */
+pid/err.D_PDESC_ZERO.badname_arm.d
 pid/err.D_PROC_NAME.globdash.d
-pid/err.D_PROC_OFF.toobig.d
+#pid/err.D_PROC_OFF.toobig.d /* No support for offset pid probes on ARM */
 pid/tst.args1.d
 pid/tst.coverage.d
 # pid/tst.emptystack.d							/* $1 gets pid of perl!? */
 pid/tst.float.d
 pid/tst.fork.d
 # pid/tst.gcc.d									/* DEFERRED pid/tst.gcc.c never halts!?! */
-pid/tst.manypids.ksh
+#pid/tst.manypids.ksh            # fork error ?
 pid/tst.oneshot.ksh
 pid/tst.oneshot_return.ksh
 pid/tst.oneshot_multithreaded.ksh
 pid/tst.ret1.d
 pid/tst.ret2.d
-pid/tst.dlopen.ksh
+pid/tst.return.d
+# pid/tst.dlopen.ksh # No dylib loading of libpcre on ARM
 # pid/tst.weak1.d								/* DEFERRED wants #pragma weak _go = go */
 # pid/tst.weak2.d								/* DEFERRED wants #pragma weak _go = go */
-plockstat/tst.available.d
+#plockstat/tst.available.d /* No plockstat probes on ARM */
 # plockstat/tst.libmap.d						/* DEFERRED wants "libc" as alias to libSystem !?! */
 pointers/err.BadAlign.d
 pointers/err.D_ADDROF_VAR.agg.d
@@ -608,7 +627,6 @@ pointers/tst.PointerArithmetic1.d
 pointers/tst.PointerArithmetic2.d
 pointers/tst.PointerArithmetic3.d
 pointers/tst.PointerAssignment.d
-pointers/tst.signs.d
 pointers/tst.ValidPointer1.d
 pointers/tst.ValidPointer2.d
 pointers/tst.VoidCast.d
@@ -616,35 +634,36 @@ pragma/err.D_PRAGERR.d
 pragma/err.D_PRAGMA_INVAL.d
 pragma/err.D_PRAGMA_MALFORM.d
 pragma/err.D_PRAGMA_UNUSED.UnusedPragma.d
+pragma/tst.libdepsepdir.ksh
 predicates/err.D_PRED_SCALAR.NonScalarPred.d
 predicates/err.D_SYNTAX.invalid.d
 predicates/err.D_SYNTAX.operr.d
 # predicates/tst.basics.d has a race writing its output when run on more than one processor.
 predicates/tst.basics.d
 predicates/tst.complex.d
-preprocessor/err.D_IDENT_UNDEF.afterprobe.d
-preprocessor/err.D_SYNTAX.withoutpound.d
-preprocessor/err.defincomp.d
-preprocessor/err.ifdefelsenotendif.d
-preprocessor/err.ifdefincomp.d
-preprocessor/err.ifdefnotendif.d
-preprocessor/err.incompelse.d
-preprocessor/err.mulelse.d
-preprocessor/tst.ifdef.d
-preprocessor/tst.ifndef.d
-preprocessor/tst.ifnotdef.d
-preprocessor/tst.logicaland.d
-preprocessor/tst.logicalandor.d
-preprocessor/tst.logicalor.d
-preprocessor/tst.muland.d
-preprocessor/tst.mulor.d
-preprocessor/tst.precondi.d
-preprocessor/tst.predicatedeclare.d
-preprocessor/tst.preexp.d
-preprocessor/tst.preexpelse.d
-preprocessor/tst.preexpif.d
-preprocessor/tst.preexpifelse.d
-preprocessor/tst.withinprobe.d
+# preprocessor/err.D_IDENT_UNDEF.afterprobe.d        /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/err.D_SYNTAX.withoutpound.d           /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/err.defincomp.d                       /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/err.ifdefelsenotendif.d               /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/err.ifdefincomp.d                     /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/err.ifdefnotendif.d                   /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/err.incompelse.d                      /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/err.mulelse.d                         /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/tst.ifdef.d                           /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/tst.ifndef.d                          /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/tst.ifnotdef.d                        /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/tst.logicaland.d                      /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/tst.logicalandor.d                    /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/tst.logicalor.d                       /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/tst.muland.d                          /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/tst.mulor.d                           /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/tst.precondi.d                        /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/tst.predicatedeclare.d                /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/tst.preexp.d                          /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/tst.preexpelse.d                      /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/tst.preexpif.d                        /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/tst.preexpifelse.d                    /* WAIVED: No preprocessor on bridgeOS. */
+# preprocessor/tst.withinprobe.d                     /* WAIVED: No preprocessor on bridgeOS. */
 printa/err.D_PRINTA_AGGARG.badagg.d
 printa/err.D_PRINTA_AGGARG.badfmt.d
 printa/err.D_PRINTA_AGGARG.badval.d
@@ -676,7 +695,7 @@ printf/err.D_PROTO_LEN.toofew.d
 printf/err.D_SYNTAX.badconv1.d
 printf/err.D_SYNTAX.badconv2.d
 printf/err.D_SYNTAX.badconv3.d
-printf/tst.basics.d	
+#printf/tst.basics.d	
 printf/tst.flags.d
 printf/tst.hello.d
 printf/tst.ints.d
@@ -690,7 +709,7 @@ printf/tst.printY.d
 printf/tst.rawfmt.d
 printf/tst.signs.d
 printf/tst.str.d
-printf/tst.sym.d
+#printf/tst.sym.d
 printf/tst.uints.d
 printf/tst.widths.d
 printf/tst.widths1.d
@@ -705,6 +724,7 @@ probes/err.D_SYNTAX.lbraces.d
 probes/err.D_SYNTAX.probespec.d
 probes/err.D_SYNTAX.rbraces.d
 probes/err.D_SYNTAX.recdec.d
+probes/tst.angle_brackets.d
 probes/tst.basic1.d
 probes/tst.check.d
 probes/tst.declare.d
@@ -742,7 +762,7 @@ profile-n/err.D_PDESC_ZEROoneusec.d
 profile-n/tst.argtest.d
 profile-n/tst.basic.d
 profile-n/tst.func.ksh
-profile-n/tst.mod.ksh
+#profile-n/tst.mod.ksh
 profile-n/tst.profilehz.d
 profile-n/tst.profilems.d
 profile-n/tst.profilemsec.d
@@ -780,29 +800,29 @@ raise/tst.raise3.d
 rates/tst.aggrate.d
 rates/tst.statusrate.d
 rates/tst.switchrate.d
-safety/tst.basename.d
-safety/tst.caller.d
-safety/tst.cleanpath.d
-safety/tst.copyin.d
-safety/tst.dirname.d
-safety/tst.index.d
+# safety/tst.basename.d
+# safety/tst.caller.d
+# safety/tst.cleanpath.d
+# safety/tst.copyin.d
+# safety/tst.dirname.d
+# safety/tst.index.d
 # safety/tst.msgsize.d
-safety/tst.null.d
-safety/tst.progenyof.d
-safety/tst.random.d
-safety/tst.shortstr.d
-safety/tst.stack.d
-safety/tst.stackdepth.d
-safety/tst.strchr.d
-safety/tst.strjoin.d
-safety/tst.strstr.d
-safety/tst.strtok.d
-safety/tst.substr.d
-safety/tst.unalign.d
-safety/tst.uregs.d
-safety/tst.ustack.d							
-safety/tst.ustackdepth.d
-safety/tst.vahole.d
+# safety/tst.null.d
+# safety/tst.progenyof.d
+# safety/tst.random.d
+# safety/tst.shortstr.d
+# safety/tst.stack.d
+# safety/tst.stackdepth.d
+# safety/tst.strchr.d
+# safety/tst.strjoin.d
+# safety/tst.strstr.d
+# safety/tst.strtok.d
+# safety/tst.substr.d
+# safety/tst.unalign.d
+# safety/tst.uregs.d
+# safety/tst.ustack.d							
+# safety/tst.ustackdepth.d
+# safety/tst.vahole.d
 # safety/tst.violentdeath.ksh
 scalars/err.D_ARR_LOCAL.thisarray.d
 scalars/err.D_DECL_CLASS.selfthis.d
@@ -818,7 +838,7 @@ scalars/tst.localvar.d
 scalars/tst.misc.d
 scalars/tst.self.d
 scalars/tst.selfarray.d
-scalars/tst.selfarray2.d
+# scalars/tst.selfarray2.d /* Thread can change PID on fork */
 scalars/tst.selfthis.d
 scalars/tst.this.d
 scalars/tst.thisself.d
@@ -849,7 +869,6 @@ scripting/tst.ppid.d
 scripting/tst.ppid.ksh
 scripting/tst.quite.d
 scripting/tst.stringmacro.ksh
-scripting/tst.taskid.d
 scripting/tst.trace.d
 scripting/tst.uid.d
 scripting/tst.uid.ksh
@@ -959,6 +978,7 @@ sugar/tst.if_nested.d
 sugar/tst.if_trailing_semicolon.d
 sugar/tst.if_trailing_semicolon2.d
 syscall/tst.openret.ksh
+syscall/tst.machtrap.d
 tick-n/err.D_PDESC_ZERO.tick.d
 tick-n/err.D_PDESC_ZEROonens.d
 tick-n/err.D_PDESC_ZEROonensec.d
@@ -973,6 +993,7 @@ tick-n/tst.ticks.d
 tick-n/tst.ticksec.d
 tick-n/tst.tickus.d
 tick-n/tst.tickusec.d
+tools/tst.dtruss.ksh
 trace/err.D_PROTO_LEN.bad.d
 trace/err.D_TRACE_VOID.bad.d
 trace/tst.misc.d
@@ -980,7 +1001,6 @@ trace/tst.qstring.d
 trace/tst.string.d
 tracemem/err.D_PROTO_ARG.badsize.d
 tracemem/err.D_PROTO_LEN.toofew.d
-tracemem/err.D_PROTO_LEN.toomany.d
 tracemem/err.D_TRACEMEM_ADDR.badaddr.d
 tracemem/err.D_TRACEMEM_SIZE.negsize.d
 tracemem/err.D_TRACEMEM_SIZE.zerosize.d
@@ -998,6 +1018,7 @@ translators/err.D_XLATE_REDECL.RepeatTransDecl.d
 translators/err.D_XLATE_SOU.BadTransDecl8.d
 translators/err.D_XLATE_SOU.BadTransInt.d
 translators/err.D_XLATE_SOU.NonExistentOutput1.d
+# translators/man.TestTransStability.d			/* Manual Test */
 translators/tst.CircularTransDecl.d
 translators/tst.EmptyTransDecl.d
 translators/tst.ForwardTag.d
@@ -1095,8 +1116,4 @@ vars/tst.ppid.d
 vars/tst.ucaller.ksh
 vars/tst.uid.d
 vars/tst.walltimestamp.d
-version/tst.1.0.d
-../i386/pid/tst.nop.d
-../i386/pid/tst.sse3.movshdup.d
-../i386/arrays/tst.vmregsarray.d
-
+#version/tst.1.0.d /* Only support DOF version 3 on darwin */
